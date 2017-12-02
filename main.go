@@ -38,7 +38,7 @@ func main() {
 	fmt.Println(config.Applications[0].BotAPIToken)
 
 	// подключаемся к боту с помощью токена
-	bot, err := tgbotapi.NewBotAPI(config.Applications[0].BotAPIToken)
+	bot, err := tgbotapi.NewBotAPI("token")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -72,8 +72,22 @@ func main() {
 			// Созадаем сообщение
 			msg := tgbotapi.NewMessage(ChatID, reply)
 			// и отправляем его
+	var ucfg tgbotapi.UpdateConfig = tgbotapi.NewUpdate(0)
+	ucfg.Timeout = 60
+	upd, _ := bot.GetUpdatesChan(ucfg)
+	for {
+		select {
+		case update := <-upd:
+			UserName := update.Message.From.UserName
+			ChatID := update.Message.Chat.ID
+			Text := update.Message.Text
+			log.Printf("[%s] %d %s", UserName, ChatID, Text)
+			reply := Text
+			msg := tgbotapi.NewMessage(ChatID, reply)
 			bot.Send(msg)
 		}
 
+	}
+	}
 	}
 }
